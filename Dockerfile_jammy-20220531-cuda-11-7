@@ -1,0 +1,59 @@
+ARG BASE_CONTAINER=ubuntu:jammy-20220531@sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19
+
+FROM $BASE_CONTAINER
+LABEL maintainer "Konstantin Taletskiy <konstantin@taletskiy.com>"
+
+ENV CUDA_VERSION 11.7.0
+ENV CUDA_PKG_VERSION 11-7=$CUDA_VERSION-1
+ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=11.7 brand=tesla,driver>=450,driver<451 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=unknown,driver>=510,driver<511 brand=nvidia,driver>=510,driver<511 brand=nvidiartx,driver>=510,driver<511 brand=quadrortx,driver>=510,driver<511"
+ENV NCCL_VERSION 2.9.9
+ENV NV_CUDNN_VERSION 8.4.0.27
+ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
+ENV NV_CUDA_LIB_VERSION 11.7.0-1
+ENV NV_LIBNPP_VERSION 11.7.3.21-1
+ENV NV_NVTX_VERSION 11.7.50-1
+ENV NV_LIBCUSPARSE_VERSION 11.7.3.50-1
+ENV NV_LIBCUBLAS_VERSION 11.10.1.25-1
+ENV NV_CUDA_CUDART_DEV_VERSION 11.7.60-1
+ENV NV_NVML_DEV_VERSION 11.7.50-1
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        gnupg2 curl ca-certificates && \
+    curl -fsSLO https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb \
+    dpkg -i cuda-keyring_1.0-1_all.deb && \
+    # echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
+    # echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        cuda-cudart-11-7=11.7.60-1 \
+        cuda-compat-11-7 && \
+    ln -s cuda-11.7 /usr/local/cuda && \
+    echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        cuda-libraries-11-7=${NV_CUDA_LIB_VERSION} \
+        libnpp-11-7=${NV_LIBNPP_VERSION} \
+        libnpp-dev-11-7=${NV_LIBNPP_VERSION} \
+        cuda-nvtx-11-7=${NV_NVTX_VERSION} \
+        libcusparse-11-7=${NV_LIBCUSPARSE_VERSION} \
+        libcusparse-dev-11-7=${NV_LIBCUSPARSE_VERSION} \
+        libcublas-11-7=${NV_LIBCUBLAS_VERSION} \
+        libcublas-dev-11-7=${NV_LIBCUBLAS_VERSION} \
+        cuda-cudart-dev-11-7=${NV_CUDA_CUDART_DEV_VERSION} \
+        cuda-command-line-tools-11-7=${NV_CUDA_LIB_VERSION} \
+        cuda-minimal-build-11-7=${NV_CUDA_LIB_VERSION} \
+        cuda-libraries-dev-11-7=${NV_CUDA_LIB_VERSION} \
+        cuda-nvml-dev-11-7=${NV_NVML_DEV_VERSION} \
+        libtinfo5 \
+        libncursesw5 \
+        libnccl2_2.12.12-1+cuda11.7 \
+        libnccl-dev_2.12.12-1+cuda11.7 && \
+        # libcudnn8=$NV_CUDNN_VERSION-1+cuda11.7 \
+        # libcudnn8-dev=$NV_CUDNN_VERSION-1+cuda11.7 && \
+    apt-mark hold libcublas-11-7 libnccl2 libcudnn8 && \
+    apt-get purge --autoremove -y curl && \
+    rm -rf /var/lib/apt/lists/*
