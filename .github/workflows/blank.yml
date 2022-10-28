@@ -4,7 +4,7 @@ name: Build Notebook Docker images
 env:
   DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
   DOCKER_TOKEN: ${{secrets.DOCKER_TOKEN}}
-  DOCKER_IMAGE: labshare/polus-cuda-base
+  DOCKER_IMAGE: polusai/ubuntu-cuda
   IMAGE_TAG: jammy-20220531-cuda-11-7
 
 # Controls when the workflow will run
