@@ -56,7 +56,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libnccl2=${NV_LIBNCCL_PACKAGE_VERSION} \
         libnccl-dev=${NV_LIBNCCL_PACKAGE_VERSION} \
         libcudnn8=${LIBCUDNN8_PACKAGE_VERSION} \
-        libcudnn8-dev_${LIBCUDNN8_PACKAGE_VERSION} \
+        libcudnn8-dev=${LIBCUDNN8_PACKAGE_VERSION} \
         tensorrt=${TENSORRT_PACKAGE_VERSION} \
         libtinfo5 \
         libncursesw5 && \
@@ -64,6 +64,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get purge --autoremove -y curl && \
     rm -rf \
         /var/lib/apt/lists/* \
-        libcudnn8_$NV_CUDNN_VERSION-1+cuda11.6_amd64.deb \
-        libcudnn8-dev_$NV_CUDNN_VERSION-1+cuda11.6_amd64.deb \
         cuda-keyring_1.0-1_all.deb
