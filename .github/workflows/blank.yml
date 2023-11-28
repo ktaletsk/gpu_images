@@ -5,7 +5,7 @@ env:
   DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
   DOCKER_TOKEN: ${{secrets.DOCKER_TOKEN}}
   DOCKER_IMAGE: polusai/ubuntu-cuda
-  IMAGE_TAG: jammy-20220531-cuda-11-7
+  IMAGE_TAG: jammy-20231004-cuda-12-3
 
 # Controls when the workflow will run
 on:
@@ -34,6 +34,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile_jammy-20220531-cuda-11-7
+          file: Dockerfile_jammy-20231004-cuda-12-2
           push: true
           tags: ${{env.DOCKER_IMAGE}}:${{env.IMAGE_TAG}}

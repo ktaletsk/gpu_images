@@ -1,0 +1,69 @@
+ARG BASE_CONTAINER=ubuntu:jammy-20231004@sha256:c9cf959fd83770dfdefd8fb42cfef0761432af36a764c077aed54bbc5bb25368
+
+FROM $BASE_CONTAINER
+LABEL maintainer "Konstantin Taletskiy <konstantin@taletskiy.com>"
+
+ENV CUDA_VERSION 12.3.0
+ENV CUDA_PKG_VERSION 12-3
+ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64/stubs
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=12.3 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526 brand=tesla,driver>=535,driver<536 brand=unknown,driver>=535,driver<536 brand=nvidia,driver>=535,driver<536 brand=nvidiartx,driver>=535,driver<536 brand=geforce,driver>=535,driver<536 brand=geforcertx,driver>=535,driver<536 brand=quadro,driver>=535,driver<536 brand=quadrortx,driver>=535,driver<536 brand=titan,driver>=535,driver<536 brand=titanrtx,driver>=535,driver<536"
+ENV NCCL_VERSION 2.9.9
+ENV NV_CUDNN_VERSION 8.4.1.50
+ENV NV_CUDA_CUDART_VERSION 12.3.52-1
+ENV NV_CUDA_LIB_VERSION 12.3.0-1
+ENV NV_LIBNPP_VERSION 12.2.2.32-1
+ENV NV_NVTX_VERSION 12.3.52-1
+ENV NV_LIBCUSPARSE_VERSION 12.1.3.153-1
+ENV NV_LIBCUBLAS_VERSION 12.3.2.9-1
+ENV NV_LIBNCCL_PACKAGE_VERSION 2.19.3-1+cuda12.3
+ENV NV_CUDA_CUDART_DEV_VERSION 12.3.52-1
+ENV NV_NVML_DEV_VERSION 12.3.52-1
+ENV NV_NVPROF_VERSION 12.3.52-1
+ENV NV_CUDA_NSIGHT_COMPUTE_VERSION 12.3.0-1
+ENV LIBCUDNN8_PACKAGE_VERSION 8.9.6.50-1+cuda12.2
+ENV TENSORRT_PACKAGE_VERSION 8.6.1.6-1+cuda12.0
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        gnupg2 curl ca-certificates && \
+    curl -fsSLO https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        cuda-cudart-${CUDA_PKG_VERSION}=${NV_CUDA_CUDART_VERSION} \
+        cuda-compat-${CUDA_PKG_VERSION} && \
+    ln -s cuda-12.3 /usr/local/cuda && \
+    echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        cuda-libraries-${CUDA_PKG_VERSION}=${NV_CUDA_LIB_VERSION} \
+        libnpp-${CUDA_PKG_VERSION}=${NV_LIBNPP_VERSION} \
+        libnpp-dev-12-3=${NV_LIBNPP_VERSION} \
+        cuda-nvtx-${CUDA_PKG_VERSION}=${NV_NVTX_VERSION} \
+        libcusparse-${CUDA_PKG_VERSION}=${NV_LIBCUSPARSE_VERSION} \
+        libcusparse-dev-${CUDA_PKG_VERSION}=${NV_LIBCUSPARSE_VERSION} \
+        libcublas-${CUDA_PKG_VERSION}=${NV_LIBCUBLAS_VERSION} \
+        libcublas-dev-${CUDA_PKG_VERSION}=${NV_LIBCUBLAS_VERSION} \
+        cuda-cudart-dev-${CUDA_PKG_VERSION}=${NV_CUDA_CUDART_DEV_VERSION} \
+        cuda-command-line-tools-${CUDA_PKG_VERSION}=${NV_CUDA_LIB_VERSION} \
+        cuda-minimal-build-${CUDA_PKG_VERSION}=${NV_CUDA_LIB_VERSION} \
+        cuda-libraries-dev-${CUDA_PKG_VERSION}=${NV_CUDA_LIB_VERSION} \
+        cuda-nvml-dev-${CUDA_PKG_VERSION}=${NV_NVML_DEV_VERSION} \
+        cuda-nvprof-${CUDA_PKG_VERSION}=${NV_NVPROF_VERSION} \
+        cuda-nsight-compute-12-3=${NV_CUDA_NSIGHT_COMPUTE_VERSION} \
+        libnccl2=${NV_LIBNCCL_PACKAGE_VERSION} \
+        libnccl-dev=${NV_LIBNCCL_PACKAGE_VERSION} \
+        libcudnn8=${LIBCUDNN8_PACKAGE_VERSION} \
+        libcudnn8-dev_${LIBCUDNN8_PACKAGE_VERSION} \
+        tensorrt=${TENSORRT_PACKAGE_VERSION} \
+        libtinfo5 \
+        libncursesw5 && \
+    apt-mark hold libcublas-${CUDA_PKG_VERSION} libcublas-dev-${CUDA_PKG_VERSION} libnccl2 libnccl-dev && \
+    apt-get purge --autoremove -y curl && \
+    rm -rf \
+        /var/lib/apt/lists/* \
+        libcudnn8_$NV_CUDNN_VERSION-1+cuda11.6_amd64.deb \
+        libcudnn8-dev_$NV_CUDNN_VERSION-1+cuda11.6_amd64.deb \
+        cuda-keyring_1.0-1_all.deb
